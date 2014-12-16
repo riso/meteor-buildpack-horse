@@ -9,7 +9,7 @@ set -e
 
 export_env_dir() {
   echo "-----> Called export env"
-  env_dir=$4
+  env_dir=$1
   whitelist_regex=${2:-''}
   blacklist_regex=${3:-'^(PATH|GIT_DIR|CPATH|CPPATH|LD_PRELOAD|LIBRARY_PATH)$'}
   echo "-----> ls output: $(ls $env_dir)"
@@ -23,7 +23,7 @@ export_env_dir() {
   fi
 }
 
-export_env_dir
+export_env_dir $3
 
 # Get the path to dir one above this file.
 BUILDPACK_DIR=$(cd -P -- "$(dirname -- "$0")" && cd .. && pwd -P)
