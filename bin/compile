@@ -7,6 +7,21 @@ set -e
 # debug verbosely.
 #set -x
 
+export_env_dir() {
+  env_dir=$3
+  whitelist_regex=${2:-''}
+  blacklist_regex=${3:-'^(PATH|GIT_DIR|CPATH|CPPATH|LD_PRELOAD|LIBRARY_PATH)$'}
+  if [ -d "$env_dir" ]; then
+    for e in $(ls $env_dir); do
+      echo "$e" | grep -E "$whitelist_regex" | grep -qvE "$blacklist_regex" &&
+        export "$e=$(cat $env_dir/$e)"
+      :
+    done
+  fi
+}
+
+export_env_dir
+
 # Get the path to dir one above this file.
 BUILDPACK_DIR=$(cd -P -- "$(dirname -- "$0")" && cd .. && pwd -P)
 # Get the directory our app is checked out in (the "BUILD_DIR"), passed by Heroku
@@ -73,9 +88,9 @@ fi
 echo "-----> Adding PATH environment"
 mkdir -p "$APP_CHECKOUT_DIR"/.profile.d
 cat > "$APP_CHECKOUT_DIR"/.profile.d/path.sh <<EOF
-  #!/bin/sh
-  export PATH=\$HOME/$COMPILE_DIR_SUFFIX/bin:\$PATH
-  export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$HOME/$COMPILE_DIR_SUFFIX/lib
+#!/bin/sh
+export PATH=\$HOME/$COMPILE_DIR_SUFFIX/bin:\$PATH
+export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$HOME/$COMPILE_DIR_SUFFIX/lib
 EOF
 
 #
@@ -86,5 +101,5 @@ EOF
 # binary dependencies, phantomjs for spiderable, etc.
 echo "-----> Running extras"
 for file in `ls "$BUILDPACK_DIR"/extra | sort`; do
-    . "$BUILDPACK_DIR"/extra/$file 
+  . "$BUILDPACK_DIR"/extra/$file 
 done
