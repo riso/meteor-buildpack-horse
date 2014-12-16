@@ -8,14 +8,11 @@ set -e
 #set -x
 
 export_env_dir() {
-  echo "-----> Called export env"
   env_dir=$1
   whitelist_regex=${2:-''}
   blacklist_regex=${3:-'^(PATH|GIT_DIR|CPATH|CPPATH|LD_PRELOAD|LIBRARY_PATH)$'}
-  echo "-----> ls output: $(ls $env_dir)"
   if [ -d "$env_dir" ]; then
     for e in $(ls $env_dir); do
-      echo "$e"
       echo "$e" | grep -qvE "$blacklist_regex" &&
         export "$e=$(cat $env_dir/$e)"
       :
